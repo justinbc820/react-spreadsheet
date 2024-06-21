@@ -1,48 +1,32 @@
-import Spreadsheet from "./Spreadsheet";
 import DataEditor from "./DataEditor";
 import DataViewer from "./DataViewer";
+import Spreadsheet from "./Spreadsheet";
 
 export default Spreadsheet;
-export { Spreadsheet, DataEditor, DataViewer };
+export { default as ColumnIndicator } from './ColumnIndicator';
 export type { Props } from "./Spreadsheet";
+export { Model, createFormulaParser } from "./engine";
 export { createEmpty as createEmptyMatrix } from "./matrix";
 export type { Matrix } from "./matrix";
-export {
-  Selection,
-  EmptySelection,
-  EntireAxisSelection,
-  EntireColumnsSelection,
-  EntireRowsSelection,
-  EntireSelection,
-  EntireWorksheetSelection,
-  InvalidIndexError,
-  RangeSelection,
-} from "./selection";
-export { PointRange } from "./point-range";
 export type { Point } from "./point";
+export { PointRange } from "./point-range";
+export {
+	EmptySelection,
+	EntireAxisSelection,
+	EntireColumnsSelection,
+	EntireRowsSelection,
+	EntireSelection,
+	EntireWorksheetSelection,
+	InvalidIndexError,
+	RangeSelection, Selection
+} from "./selection";
 export type {
-  CellBase,
-  CellDescriptor,
-  Mode,
-  Dimensions,
-  CellChange,
-  CellComponentProps,
-  CellComponent,
-  DataViewerProps,
-  DataViewerComponent,
-  DataEditorProps,
-  DataEditorComponent,
-  ColumnIndicatorComponent,
-  ColumnIndicatorProps,
-  RowIndicatorComponent,
-  RowIndicatorProps,
-  CornerIndicatorComponent,
-  CornerIndicatorProps,
-  RowComponent,
-  RowProps,
-  TableComponent,
-  TableProps,
-  HeaderRowProps,
-  HeaderRowComponent,
+	CellBase, CellChange, CellComponent, CellComponentProps, CellDescriptor, ColumnIndicatorComponent,
+	ColumnIndicatorProps, CornerIndicatorComponent,
+	CornerIndicatorProps, DataEditorComponent, DataEditorProps, DataViewerComponent, DataViewerProps, Dimensions, HeaderRowComponent, HeaderRowProps, Mode, RowComponent, RowIndicatorComponent,
+	RowIndicatorProps, RowProps,
+	TableComponent,
+	TableProps
 } from "./types";
-export { createFormulaParser, Model } from "./engine";
+export { DataEditor, DataViewer, Spreadsheet };
+
