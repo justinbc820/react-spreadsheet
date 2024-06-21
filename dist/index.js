@@ -135,128 +135,6 @@ function __spreadArray(to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 }
 
-var SET_DATA = "SET_DATA";
-var SET_CREATE_FORMULA_PARSER = "SET_CREATE_FORMULA_PARSER";
-var SELECT_ENTIRE_ROW = "SELECT_ENTIRE_ROW";
-var SELECT_ENTIRE_COLUMN = "SELECT_ENTIRE_COLUMN";
-var SELECT_ENTIRE_WORKSHEET = "SELECT_ENTIRE_WORKSHEET";
-var SET_SELECTION = "SET_SELECTION";
-var SELECT = "SELECT";
-var ACTIVATE = "ACTIVATE";
-var SET_CELL_DATA = "SET_CELL_DATA";
-var SET_CELL_DIMENSIONS = "SET_CELL_DIMENSIONS";
-var COPY = "COPY";
-var CUT = "CUT";
-var PASTE = "PASTE";
-var EDIT = "EDIT";
-var VIEW = "VIEW";
-var CLEAR = "CLEAR";
-var BLUR = "BLUR";
-var KEY_PRESS = "KEY_PRESS";
-var KEY_DOWN = "KEY_DOWN";
-var DRAG_START = "DRAG_START";
-var DRAG_END = "DRAG_END";
-var COMMIT = "COMMIT";
-function setData(data) {
-    return {
-        type: SET_DATA,
-        payload: { data: data },
-    };
-}
-function setCreateFormulaParser(createFormulaParser) {
-    return {
-        type: SET_CREATE_FORMULA_PARSER,
-        payload: { createFormulaParser: createFormulaParser },
-    };
-}
-function selectEntireRow(row, extend) {
-    return {
-        type: SELECT_ENTIRE_ROW,
-        payload: { row: row, extend: extend },
-    };
-}
-function selectEntireColumn(column, extend) {
-    return {
-        type: SELECT_ENTIRE_COLUMN,
-        payload: { column: column, extend: extend },
-    };
-}
-function selectEntireWorksheet() {
-    return { type: SELECT_ENTIRE_WORKSHEET };
-}
-function setSelection(selection) {
-    return { type: SET_SELECTION, payload: { selection: selection } };
-}
-function select(point) {
-    return {
-        type: SELECT,
-        payload: { point: point },
-    };
-}
-function activate(point) {
-    return {
-        type: ACTIVATE,
-        payload: { point: point },
-    };
-}
-function setCellData(active, data) {
-    return {
-        type: SET_CELL_DATA,
-        payload: { active: active, data: data },
-    };
-}
-function setCellDimensions(point, dimensions) {
-    return {
-        type: SET_CELL_DIMENSIONS,
-        payload: { point: point, dimensions: dimensions },
-    };
-}
-function paste(data) {
-    return {
-        type: PASTE,
-        payload: { data: data },
-    };
-}
-function keyPress(event) {
-    return {
-        type: KEY_PRESS,
-        payload: { event: event },
-    };
-}
-function keyDown(event) {
-    return {
-        type: KEY_DOWN,
-        payload: { event: event },
-    };
-}
-function dragStart() {
-    return { type: DRAG_START };
-}
-function dragEnd() {
-    return { type: DRAG_END };
-}
-function commit$1(changes) {
-    return {
-        type: COMMIT,
-        payload: { changes: changes },
-    };
-}
-function copy() {
-    return { type: COPY };
-}
-function cut() {
-    return { type: CUT };
-}
-function edit$1() {
-    return { type: EDIT };
-}
-function view$1() {
-    return { type: VIEW };
-}
-function blur$1() {
-    return { type: BLUR };
-}
-
 /**
  * Creates an empty matrix with given rows and columns
  * @param rows - integer, the amount of rows the matrix should have
@@ -538,6 +416,288 @@ function maxPoint(matrix) {
     return { row: size.rows - 1, column: size.columns - 1 };
 }
 
+/** Return whether two given points are the equal */
+function isEqual(source, target) {
+    return source.column === target.column && source.row === target.row;
+}
+/** The origin point in matrices */
+var ORIGIN = { row: 0, column: 0 };
+
+var PLAIN_TEXT_MIME = "text/plain";
+var FOCUS_WITHIN_SELECTOR = ":focus-within";
+/** Move the cursor of given input element to the input's end */
+function moveCursorToEnd(el) {
+    el.selectionStart = el.selectionEnd = el.value.length;
+}
+/**
+ * Creates an array of numbers (positive and/or negative) progressing from start up to, but not including, end. A step of -1 is used if a negative start is specified without an end or step. If end is not specified, it's set to start with start then set to 0.
+ * @param end - an integer number specifying at which position to stop (not included).
+ * @param start - An integer number specifying at which position to start.
+ * @param step - An integer number specifying the incrementation
+ */
+function range(end, start, step) {
+    if (start === void 0) { start = 0; }
+    if (step === void 0) { step = 1; }
+    var array = [];
+    if (Math.sign(end - start) === -1) {
+        for (var element = start; element > end; element -= step) {
+            array.push(element);
+        }
+        return array;
+    }
+    for (var element = start; element < end; element += step) {
+        array.push(element);
+    }
+    return array;
+}
+/** Return whether given point is active */
+function isActive(active, point) {
+    return Boolean(active && isEqual(point, active));
+}
+/** Get the offset values of given element */
+function getOffsetRect(element) {
+    return {
+        width: element.offsetWidth,
+        height: element.offsetHeight,
+        left: element.offsetLeft,
+        top: element.offsetTop,
+    };
+}
+/** Write given data to clipboard with given event */
+function writeTextToClipboard(event, data) {
+    var _a;
+    (_a = event.clipboardData) === null || _a === void 0 ? void 0 : _a.setData(PLAIN_TEXT_MIME, data);
+}
+/** Read text from given clipboard event */
+function readTextFromClipboard(event) {
+    // @ts-ignore
+    if (window.clipboardData && window.clipboardData.getData) {
+        // @ts-ignore
+        return window.clipboardData.getData("Text");
+    }
+    if (event.clipboardData && event.clipboardData.getData) {
+        return event.clipboardData.getData(PLAIN_TEXT_MIME);
+    }
+    return "";
+}
+/** Get the dimensions of cell at point from state */
+function getCellDimensions(point, rowDimensions, columnDimensions) {
+    var cellRowDimensions = rowDimensions && rowDimensions[point.row];
+    var cellColumnDimensions = columnDimensions && columnDimensions[point.column];
+    return (cellRowDimensions &&
+        cellColumnDimensions && __assign(__assign({}, cellRowDimensions), cellColumnDimensions));
+}
+/** Get the dimensions of a range of cells */
+function getRangeDimensions(rowDimensions, columnDimensions, range) {
+    var startDimensions = getCellDimensions(range.start, rowDimensions, columnDimensions);
+    var endDimensions = getCellDimensions(range.end, rowDimensions, columnDimensions);
+    return (startDimensions &&
+        endDimensions && {
+        width: endDimensions.left + endDimensions.width - startDimensions.left,
+        height: endDimensions.top + endDimensions.height - startDimensions.top,
+        top: startDimensions.top,
+        left: startDimensions.left,
+    });
+}
+/** Get the dimensions of selected */
+function getSelectedDimensions(rowDimensions, columnDimensions, data, selected) {
+    var range = selected.toRange(data);
+    return range
+        ? getRangeDimensions(rowDimensions, columnDimensions, range)
+        : undefined;
+}
+/** Get given data as CSV */
+function getCSV(data) {
+    var valueMatrix = map(function (cell) { return (cell === null || cell === void 0 ? void 0 : cell.value) || ""; }, data);
+    return join(valueMatrix);
+}
+/**
+ * Calculate the rows and columns counts of a spreadsheet
+ * @param data - the spreadsheet's data
+ * @param rowLabels - the spreadsheet's row labels (if defined)
+ * @param columnLabels - the spreadsheet's column labels (if defined)
+ * @returns the rows and columns counts of a spreadsheet
+ */
+function calculateSpreadsheetSize(data, rowLabels, columnLabels) {
+    var _a = getSize(data), columns = _a.columns, rows = _a.rows;
+    return {
+        rows: rowLabels ? Math.max(rows, rowLabels.length) : rows,
+        columns: columnLabels ? Math.max(columns, columnLabels.length) : columns,
+    };
+}
+/** Should spreadsheet handle clipboard event */
+function shouldHandleClipboardEvent(root, mode) {
+    return root !== null && mode === "view" && isFocusedWithin(root);
+}
+function isFocusedWithin(element) {
+    return element.matches(FOCUS_WITHIN_SELECTOR);
+}
+function hasLineBreaker(value) {
+    return typeof value === "string" && value.includes("\n");
+}
+
+/** The default Spreadsheet DataEditor component */
+var DataEditor = function (_a) {
+    var _b;
+    var onChange = _a.onChange, cell = _a.cell;
+    var inputRef = React__namespace.useRef(null);
+    var handleChange = React__namespace.useCallback(function (event) {
+        onChange(__assign(__assign({}, cell), { value: event.target.value }));
+    }, [onChange, cell]);
+    React__namespace.useEffect(function () {
+        if (inputRef.current) {
+            moveCursorToEnd(inputRef.current);
+        }
+    }, [inputRef]);
+    var value = (_b = cell === null || cell === void 0 ? void 0 : cell.value) !== null && _b !== void 0 ? _b : "";
+    return (React__namespace.createElement("div", { className: "Spreadsheet__data-editor" },
+        React__namespace.createElement("input", { ref: inputRef, type: "text", onChange: handleChange, value: value, autoFocus: true })));
+};
+
+var TRUE_TEXT = "TRUE";
+var FALSE_TEXT = "FALSE";
+/** The default Spreadsheet DataViewer component */
+var DataViewer = function (_a) {
+    var cell = _a.cell, evaluatedCell = _a.evaluatedCell;
+    var value = getValue(cell, evaluatedCell);
+    return typeof value === "boolean" ? (React__namespace.createElement("span", { className: "Spreadsheet__data-viewer Spreadsheet__data-viewer--boolean" }, convertBooleanToText(value))) : (React__namespace.createElement("span", { className: classNames("Spreadsheet__data-viewer", {
+            "Spreadsheet__data-viewer--preserve-breaks": hasLineBreaker(value),
+        }) }, value));
+};
+function getValue(cell, evaluatedCell) {
+    var _a;
+    var baseValue = (_a = evaluatedCell === null || evaluatedCell === void 0 ? void 0 : evaluatedCell.value) !== null && _a !== void 0 ? _a : cell === null || cell === void 0 ? void 0 : cell.value;
+    if (baseValue && typeof baseValue === "object") {
+        return baseValue.toString();
+    }
+    return baseValue;
+}
+function convertBooleanToText(value) {
+    return value ? TRUE_TEXT : FALSE_TEXT;
+}
+
+var SET_DATA = "SET_DATA";
+var SET_CREATE_FORMULA_PARSER = "SET_CREATE_FORMULA_PARSER";
+var SELECT_ENTIRE_ROW = "SELECT_ENTIRE_ROW";
+var SELECT_ENTIRE_COLUMN = "SELECT_ENTIRE_COLUMN";
+var SELECT_ENTIRE_WORKSHEET = "SELECT_ENTIRE_WORKSHEET";
+var SET_SELECTION = "SET_SELECTION";
+var SELECT = "SELECT";
+var ACTIVATE = "ACTIVATE";
+var SET_CELL_DATA = "SET_CELL_DATA";
+var SET_CELL_DIMENSIONS = "SET_CELL_DIMENSIONS";
+var COPY = "COPY";
+var CUT = "CUT";
+var PASTE = "PASTE";
+var EDIT = "EDIT";
+var VIEW = "VIEW";
+var CLEAR = "CLEAR";
+var BLUR = "BLUR";
+var KEY_PRESS = "KEY_PRESS";
+var KEY_DOWN = "KEY_DOWN";
+var DRAG_START = "DRAG_START";
+var DRAG_END = "DRAG_END";
+var COMMIT = "COMMIT";
+function setData(data) {
+    return {
+        type: SET_DATA,
+        payload: { data: data },
+    };
+}
+function setCreateFormulaParser(createFormulaParser) {
+    return {
+        type: SET_CREATE_FORMULA_PARSER,
+        payload: { createFormulaParser: createFormulaParser },
+    };
+}
+function selectEntireRow(row, extend) {
+    return {
+        type: SELECT_ENTIRE_ROW,
+        payload: { row: row, extend: extend },
+    };
+}
+function selectEntireColumn(column, extend) {
+    return {
+        type: SELECT_ENTIRE_COLUMN,
+        payload: { column: column, extend: extend },
+    };
+}
+function selectEntireWorksheet() {
+    return { type: SELECT_ENTIRE_WORKSHEET };
+}
+function setSelection(selection) {
+    return { type: SET_SELECTION, payload: { selection: selection } };
+}
+function select(point) {
+    return {
+        type: SELECT,
+        payload: { point: point },
+    };
+}
+function activate(point) {
+    return {
+        type: ACTIVATE,
+        payload: { point: point },
+    };
+}
+function setCellData(active, data) {
+    return {
+        type: SET_CELL_DATA,
+        payload: { active: active, data: data },
+    };
+}
+function setCellDimensions(point, dimensions) {
+    return {
+        type: SET_CELL_DIMENSIONS,
+        payload: { point: point, dimensions: dimensions },
+    };
+}
+function paste(data) {
+    return {
+        type: PASTE,
+        payload: { data: data },
+    };
+}
+function keyPress(event) {
+    return {
+        type: KEY_PRESS,
+        payload: { event: event },
+    };
+}
+function keyDown(event) {
+    return {
+        type: KEY_DOWN,
+        payload: { event: event },
+    };
+}
+function dragStart() {
+    return { type: DRAG_START };
+}
+function dragEnd() {
+    return { type: DRAG_END };
+}
+function commit$1(changes) {
+    return {
+        type: COMMIT,
+        payload: { changes: changes },
+    };
+}
+function copy() {
+    return { type: COPY };
+}
+function cut() {
+    return { type: CUT };
+}
+function edit$1() {
+    return { type: EDIT };
+}
+function view$1() {
+    return { type: VIEW };
+}
+function blur$1() {
+    return { type: BLUR };
+}
+
 /**
  * Interface for ranges between two points
  */
@@ -615,13 +775,6 @@ var PointRange = /** @class */ (function () {
     };
     return PointRange;
 }());
-
-/** Return whether two given points are the equal */
-function isEqual(source, target) {
-    return source.column === target.column && source.row === target.row;
-}
-/** The origin point in matrices */
-var ORIGIN = { row: 0, column: 0 };
 
 /** Selection from a spreadsheet */
 var Selection = /** @class */ (function () {
@@ -839,119 +992,6 @@ var InvalidIndexError = /** @class */ (function (_super) {
     }
     return InvalidIndexError;
 }(Error));
-
-var PLAIN_TEXT_MIME = "text/plain";
-var FOCUS_WITHIN_SELECTOR = ":focus-within";
-/** Move the cursor of given input element to the input's end */
-function moveCursorToEnd(el) {
-    el.selectionStart = el.selectionEnd = el.value.length;
-}
-/**
- * Creates an array of numbers (positive and/or negative) progressing from start up to, but not including, end. A step of -1 is used if a negative start is specified without an end or step. If end is not specified, it's set to start with start then set to 0.
- * @param end - an integer number specifying at which position to stop (not included).
- * @param start - An integer number specifying at which position to start.
- * @param step - An integer number specifying the incrementation
- */
-function range(end, start, step) {
-    if (start === void 0) { start = 0; }
-    if (step === void 0) { step = 1; }
-    var array = [];
-    if (Math.sign(end - start) === -1) {
-        for (var element = start; element > end; element -= step) {
-            array.push(element);
-        }
-        return array;
-    }
-    for (var element = start; element < end; element += step) {
-        array.push(element);
-    }
-    return array;
-}
-/** Return whether given point is active */
-function isActive(active, point) {
-    return Boolean(active && isEqual(point, active));
-}
-/** Get the offset values of given element */
-function getOffsetRect(element) {
-    return {
-        width: element.offsetWidth,
-        height: element.offsetHeight,
-        left: element.offsetLeft,
-        top: element.offsetTop,
-    };
-}
-/** Write given data to clipboard with given event */
-function writeTextToClipboard(event, data) {
-    var _a;
-    (_a = event.clipboardData) === null || _a === void 0 ? void 0 : _a.setData(PLAIN_TEXT_MIME, data);
-}
-/** Read text from given clipboard event */
-function readTextFromClipboard(event) {
-    // @ts-ignore
-    if (window.clipboardData && window.clipboardData.getData) {
-        // @ts-ignore
-        return window.clipboardData.getData("Text");
-    }
-    if (event.clipboardData && event.clipboardData.getData) {
-        return event.clipboardData.getData(PLAIN_TEXT_MIME);
-    }
-    return "";
-}
-/** Get the dimensions of cell at point from state */
-function getCellDimensions(point, rowDimensions, columnDimensions) {
-    var cellRowDimensions = rowDimensions && rowDimensions[point.row];
-    var cellColumnDimensions = columnDimensions && columnDimensions[point.column];
-    return (cellRowDimensions &&
-        cellColumnDimensions && __assign(__assign({}, cellRowDimensions), cellColumnDimensions));
-}
-/** Get the dimensions of a range of cells */
-function getRangeDimensions(rowDimensions, columnDimensions, range) {
-    var startDimensions = getCellDimensions(range.start, rowDimensions, columnDimensions);
-    var endDimensions = getCellDimensions(range.end, rowDimensions, columnDimensions);
-    return (startDimensions &&
-        endDimensions && {
-        width: endDimensions.left + endDimensions.width - startDimensions.left,
-        height: endDimensions.top + endDimensions.height - startDimensions.top,
-        top: startDimensions.top,
-        left: startDimensions.left,
-    });
-}
-/** Get the dimensions of selected */
-function getSelectedDimensions(rowDimensions, columnDimensions, data, selected) {
-    var range = selected.toRange(data);
-    return range
-        ? getRangeDimensions(rowDimensions, columnDimensions, range)
-        : undefined;
-}
-/** Get given data as CSV */
-function getCSV(data) {
-    var valueMatrix = map(function (cell) { return (cell === null || cell === void 0 ? void 0 : cell.value) || ""; }, data);
-    return join(valueMatrix);
-}
-/**
- * Calculate the rows and columns counts of a spreadsheet
- * @param data - the spreadsheet's data
- * @param rowLabels - the spreadsheet's row labels (if defined)
- * @param columnLabels - the spreadsheet's column labels (if defined)
- * @returns the rows and columns counts of a spreadsheet
- */
-function calculateSpreadsheetSize(data, rowLabels, columnLabels) {
-    var _a = getSize(data), columns = _a.columns, rows = _a.rows;
-    return {
-        rows: rowLabels ? Math.max(rows, rowLabels.length) : rows,
-        columns: columnLabels ? Math.max(columns, columnLabels.length) : columns,
-    };
-}
-/** Should spreadsheet handle clipboard event */
-function shouldHandleClipboardEvent(root, mode) {
-    return root !== null && mode === "view" && isFocusedWithin(root);
-}
-function isFocusedWithin(element) {
-    return element.matches(FOCUS_WITHIN_SELECTOR);
-}
-function hasLineBreaker(value) {
-    return typeof value === "string" && value.includes("\n");
-}
 
 function toString(point) {
     return "".concat(point.row, ",").concat(point.column);
@@ -2210,46 +2250,6 @@ var enhance = function (CellComponent) {
     };
 };
 
-var TRUE_TEXT = "TRUE";
-var FALSE_TEXT = "FALSE";
-/** The default Spreadsheet DataViewer component */
-var DataViewer = function (_a) {
-    var cell = _a.cell, evaluatedCell = _a.evaluatedCell;
-    var value = getValue(cell, evaluatedCell);
-    return typeof value === "boolean" ? (React__namespace.createElement("span", { className: "Spreadsheet__data-viewer Spreadsheet__data-viewer--boolean" }, convertBooleanToText(value))) : (React__namespace.createElement("span", { className: classNames("Spreadsheet__data-viewer", {
-            "Spreadsheet__data-viewer--preserve-breaks": hasLineBreaker(value),
-        }) }, value));
-};
-function getValue(cell, evaluatedCell) {
-    var _a;
-    var baseValue = (_a = evaluatedCell === null || evaluatedCell === void 0 ? void 0 : evaluatedCell.value) !== null && _a !== void 0 ? _a : cell === null || cell === void 0 ? void 0 : cell.value;
-    if (baseValue && typeof baseValue === "object") {
-        return baseValue.toString();
-    }
-    return baseValue;
-}
-function convertBooleanToText(value) {
-    return value ? TRUE_TEXT : FALSE_TEXT;
-}
-
-/** The default Spreadsheet DataEditor component */
-var DataEditor = function (_a) {
-    var _b;
-    var onChange = _a.onChange, cell = _a.cell;
-    var inputRef = React__namespace.useRef(null);
-    var handleChange = React__namespace.useCallback(function (event) {
-        onChange(__assign(__assign({}, cell), { value: event.target.value }));
-    }, [onChange, cell]);
-    React__namespace.useEffect(function () {
-        if (inputRef.current) {
-            moveCursorToEnd(inputRef.current);
-        }
-    }, [inputRef]);
-    var value = (_b = cell === null || cell === void 0 ? void 0 : cell.value) !== null && _b !== void 0 ? _b : "";
-    return (React__namespace.createElement("div", { className: "Spreadsheet__data-editor" },
-        React__namespace.createElement("input", { ref: inputRef, type: "text", onChange: handleChange, value: value, autoFocus: true })));
-};
-
 var ActiveCell = function (props) {
     var rootRef = React__namespace.useRef(null);
     var dispatch = useDispatch();
@@ -2675,6 +2675,7 @@ var Spreadsheet = function (props) {
     return (React__namespace.createElement(context.Provider, { value: reducerElements }, rootNode));
 };
 
+exports.ColumnIndicator = ColumnIndicator;
 exports.DataEditor = DataEditor;
 exports.DataViewer = DataViewer;
 exports.EmptySelection = EmptySelection;

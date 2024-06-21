@@ -334,6 +334,12 @@ type CornerIndicatorProps = {
 type CornerIndicatorComponent = React.ComponentType<CornerIndicatorProps>;
 type CreateFormulaParser = (data: Matrix<CellBase>) => FormulaParser;
 
+/** The default Spreadsheet DataEditor component */
+declare const DataEditor: React.FC<DataEditorProps>;
+
+/** The default Spreadsheet DataViewer component */
+declare const DataViewer: <Cell extends CellBase<Value>, Value>({ cell, evaluatedCell, }: DataViewerProps<Cell>) => React.ReactElement;
+
 /** The Spreadsheet component props */
 type Props<CellType extends CellBase> = {
     /** The spreadsheet's data */
@@ -416,10 +422,6 @@ type Props<CellType extends CellBase> = {
  */
 declare const Spreadsheet: <CellType extends CellBase<any>>(props: Props<CellType>) => React.ReactElement;
 
-/** The default Spreadsheet DataEditor component */
-declare const DataEditor: React.FC<DataEditorProps>;
+declare const ColumnIndicator: ColumnIndicatorComponent;
 
-/** The default Spreadsheet DataViewer component */
-declare const DataViewer: <Cell extends CellBase<Value>, Value>({ cell, evaluatedCell, }: DataViewerProps<Cell>) => React.ReactElement;
-
-export { CellBase, CellChange, CellComponent, CellComponentProps, CellDescriptor, ColumnIndicatorComponent, ColumnIndicatorProps, CornerIndicatorComponent, CornerIndicatorProps, DataEditor, DataEditorComponent, DataEditorProps, DataViewer, DataViewerComponent, DataViewerProps, Dimensions, EmptySelection, EntireAxisSelection, EntireColumnsSelection, EntireRowsSelection, EntireSelection, EntireWorksheetSelection, HeaderRowComponent, HeaderRowProps, InvalidIndexError, Matrix, Mode, Model, Point, PointRange, Props, RangeSelection, RowComponent, RowIndicatorComponent, RowIndicatorProps, RowProps, Selection, Spreadsheet, TableComponent, TableProps, createEmpty as createEmptyMatrix, createFormulaParser, Spreadsheet as default };
+export { CellBase, CellChange, CellComponent, CellComponentProps, CellDescriptor, ColumnIndicator, ColumnIndicatorComponent, ColumnIndicatorProps, CornerIndicatorComponent, CornerIndicatorProps, DataEditor, DataEditorComponent, DataEditorProps, DataViewer, DataViewerComponent, DataViewerProps, Dimensions, EmptySelection, EntireAxisSelection, EntireColumnsSelection, EntireRowsSelection, EntireSelection, EntireWorksheetSelection, HeaderRowComponent, HeaderRowProps, InvalidIndexError, Matrix, Mode, Model, Point, PointRange, Props, RangeSelection, RowComponent, RowIndicatorComponent, RowIndicatorProps, RowProps, Selection, Spreadsheet, TableComponent, TableProps, createEmpty as createEmptyMatrix, createFormulaParser, Spreadsheet as default };
