@@ -27,8 +27,7 @@
 		"build-typedoc": "typedoc",
 		"ci": "run-s check-format check-typing lint test:coverage",
 		"storybook": "storybook dev -p 6006",
-		"build-storybook": "storybook build",
-		"prepare": "npm run build"
+		"build-storybook": "storybook build"
 	},
 	"peerDependencies": {
 		"react": ">=16.8.0",

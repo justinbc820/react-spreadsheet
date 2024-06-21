@@ -2652,5 +2652,5 @@ var Spreadsheet = function (props) {
     return (React.createElement(context.Provider, { value: reducerElements }, rootNode));
 };
 
-export { ColumnIndicator, DataEditor, DataViewer, EmptySelection, EntireAxisSelection, EntireColumnsSelection, EntireRowsSelection, EntireSelection, EntireWorksheetSelection, InvalidIndexError, Model, PointRange, RangeSelection, Selection, Spreadsheet, createEmpty as createEmptyMatrix, createFormulaParser, Spreadsheet as default };
+export { Cell, ColumnIndicator, CornerIndicator, DataEditor, DataViewer, EmptySelection, EntireAxisSelection, EntireColumnsSelection, EntireRowsSelection, EntireSelection, EntireWorksheetSelection, HeaderRow, InvalidIndexError, Model, PointRange, RangeSelection, Row, RowIndicator, Selection, Spreadsheet, Table, createEmpty as createEmptyMatrix, createFormulaParser, Spreadsheet as default };
 //# sourceMappingURL=index.js.map

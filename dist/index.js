@@ -2675,7 +2675,9 @@ var Spreadsheet = function (props) {
     return (React__namespace.createElement(context.Provider, { value: reducerElements }, rootNode));
 };
 
+exports.Cell = Cell;
 exports.ColumnIndicator = ColumnIndicator;
+exports.CornerIndicator = CornerIndicator;
 exports.DataEditor = DataEditor;
 exports.DataViewer = DataViewer;
 exports.EmptySelection = EmptySelection;
@@ -2684,12 +2686,16 @@ exports.EntireColumnsSelection = EntireColumnsSelection;
 exports.EntireRowsSelection = EntireRowsSelection;
 exports.EntireSelection = EntireSelection;
 exports.EntireWorksheetSelection = EntireWorksheetSelection;
+exports.HeaderRow = HeaderRow;
 exports.InvalidIndexError = InvalidIndexError;
 exports.Model = Model;
 exports.PointRange = PointRange;
 exports.RangeSelection = RangeSelection;
+exports.Row = Row;
+exports.RowIndicator = RowIndicator;
 exports.Selection = Selection;
 exports.Spreadsheet = Spreadsheet;
+exports.Table = Table;
 exports.createEmptyMatrix = createEmpty;
 exports.createFormulaParser = createFormulaParser;
 exports.default = Spreadsheet;

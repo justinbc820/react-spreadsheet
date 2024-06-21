@@ -422,6 +422,18 @@ type Props<CellType extends CellBase> = {
  */
 declare const Spreadsheet: <CellType extends CellBase<any>>(props: Props<CellType>) => React.ReactElement;
 
+declare const Cell: React.FC<CellComponentProps>;
+
 declare const ColumnIndicator: ColumnIndicatorComponent;
 
-export { CellBase, CellChange, CellComponent, CellComponentProps, CellDescriptor, ColumnIndicator, ColumnIndicatorComponent, ColumnIndicatorProps, CornerIndicatorComponent, CornerIndicatorProps, DataEditor, DataEditorComponent, DataEditorProps, DataViewer, DataViewerComponent, DataViewerProps, Dimensions, EmptySelection, EntireAxisSelection, EntireColumnsSelection, EntireRowsSelection, EntireSelection, EntireWorksheetSelection, HeaderRowComponent, HeaderRowProps, InvalidIndexError, Matrix, Mode, Model, Point, PointRange, Props, RangeSelection, RowComponent, RowIndicatorComponent, RowIndicatorProps, RowProps, Selection, Spreadsheet, TableComponent, TableProps, createEmpty as createEmptyMatrix, createFormulaParser, Spreadsheet as default };
+declare const CornerIndicator: CornerIndicatorComponent;
+
+declare const HeaderRow: HeaderRowComponent;
+
+declare const Row: RowComponent;
+
+declare const RowIndicator: RowIndicatorComponent;
+
+declare const Table: TableComponent;
+
+export { Cell, CellBase, CellChange, CellComponent, CellComponentProps, CellDescriptor, ColumnIndicator, ColumnIndicatorComponent, ColumnIndicatorProps, CornerIndicator, CornerIndicatorComponent, CornerIndicatorProps, DataEditor, DataEditorComponent, DataEditorProps, DataViewer, DataViewerComponent, DataViewerProps, Dimensions, EmptySelection, EntireAxisSelection, EntireColumnsSelection, EntireRowsSelection, EntireSelection, EntireWorksheetSelection, HeaderRow, HeaderRowComponent, HeaderRowProps, InvalidIndexError, Matrix, Mode, Model, Point, PointRange, Props, RangeSelection, Row, RowComponent, RowIndicator, RowIndicatorComponent, RowIndicatorProps, RowProps, Selection, Spreadsheet, Table, TableComponent, TableProps, createEmpty as createEmptyMatrix, createFormulaParser, Spreadsheet as default };
