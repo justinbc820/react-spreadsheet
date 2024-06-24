@@ -1,12 +1,12 @@
-import * as React from "react";
 import classnames from "classnames";
-import * as Matrix from "./matrix";
-import * as Types from "./types";
-import * as Point from "./point";
+import * as React from "react";
 import * as Actions from "./actions";
-import { isActive, getOffsetRect } from "./util";
+import * as Matrix from "./matrix";
+import * as Point from "./point";
+import * as Types from "./types";
 import useDispatch from "./use-dispatch";
 import useSelector from "./use-selector";
+import { getOffsetRect, isActive } from "./util";
 
 export const Cell: React.FC<Types.CellComponentProps> = ({
   row,
@@ -32,7 +32,7 @@ export const Cell: React.FC<Types.CellComponentProps> = ({
     [row, column]
   );
 
-  const handleMouseDown = React.useCallback(
+  const handleMouseClick = React.useCallback(
     (event: React.MouseEvent<HTMLTableCellElement>) => {
       if (mode === "view") {
         setCellDimensions(point, getOffsetRect(event.currentTarget));
@@ -79,7 +79,7 @@ export const Cell: React.FC<Types.CellComponentProps> = ({
         "Spreadsheet__cell--readonly": data?.readOnly,
       })}
       onMouseOver={handleMouseOver}
-      onMouseDown={handleMouseDown}
+      onClick={handleMouseClick}
       tabIndex={0}
     >
       <DataViewer

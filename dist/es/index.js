@@ -2163,7 +2163,7 @@ var Cell = function (_a) {
         row: row,
         column: column,
     }); }, [row, column]);
-    var handleMouseDown = React.useCallback(function (event) {
+    var handleMouseClick = React.useCallback(function (event) {
         if (mode === "view") {
             setCellDimensions(point, getOffsetRect(event.currentTarget));
             if (event.shiftKey) {
@@ -2195,7 +2195,7 @@ var Cell = function (_a) {
     }
     return (React.createElement("td", { ref: rootRef, className: classNames("Spreadsheet__cell", data === null || data === void 0 ? void 0 : data.className, {
             "Spreadsheet__cell--readonly": data === null || data === void 0 ? void 0 : data.readOnly,
-        }), onMouseOver: handleMouseOver, onMouseDown: handleMouseDown, tabIndex: 0 },
+        }), onMouseOver: handleMouseOver, onClick: handleMouseClick, tabIndex: 0 },
         React.createElement(DataViewer, { row: row, column: column, cell: data, evaluatedCell: evaluatedData, setCellData: setCellData })));
 };
 var enhance = function (CellComponent) {
